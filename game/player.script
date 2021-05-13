@@ -46,7 +46,7 @@ local function play_animation(self, anim)
 	-- only play animations which are not already playing
 	if self.anim ~= anim then
 		-- tell the sprite to play the animation
-		msg.post("#sprite", "play_animation", {id = anim})
+		sprite.play_flipbook("#sprite", anim)
 		-- remember which animation is playing
 		self.anim = anim
 	end
