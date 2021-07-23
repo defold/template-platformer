@@ -5,10 +5,16 @@
 local air_acceleration_factor = 0.8
 -- max speed right/left
 local max_speed = 450
+-- max speed when falling
+local max_fall_speed = -1000
 -- gravity pulling the player down in pixel units
 local gravity = -1900
 -- take-off speed when jumping in pixel units
 local jump_takeoff_speed = 1200
+-- acceleration when on the ground
+local ground_acceleration = 1200
+-- deceleration when on the ground
+local ground_deceleration = 600
 
 
 -- pre-hashing ids improves performance
@@ -24,6 +30,10 @@ local anim_jump = hash("jump")
 local anim_fall = hash("fall")
 
 
+local function clamp(v, min, max)
+	return math.max(math.min(v, max), min)
+end
+
 function init(self)
 	-- this lets us handle input in this script
 	msg.post(".", "acquire_input_focus")
@@ -32,8 +42,9 @@ function init(self)
 	-- this will send camera updates to the render script
 	msg.post("camera", "acquire_camera_focus")
 
-	-- initial player velocity
+	-- initial player velocity and acceleration
 	self.velocity = vmath.vector3(0, 0, 0)
+	self.acceleration = vmath.vector3(0, 0, 0)
 	-- support variable to keep track of collisions and separation
 	self.correction = vmath.vector3()
 	-- if the player stands on ground or not
@@ -73,7 +84,17 @@ end
 
 function update(self, dt)
 	-- apply gravity
-	self.velocity.y = self.velocity.y + gravity * dt
+	self.velocity.y = math.max(self.velocity.y + gravity * dt, max_fall_speed)
+	
+	-- apply horizontal acceleration and keep within max_speed
+	self.velocity.x = clamp(self.velocity.x + self.acceleration.x * dt, -max_speed, max_speed)
+
+	-- apply opposing horizontal force
+	if self.velocity.x > 0 then
+		self.velocity.x = math.max(self.velocity.x - ground_deceleration * dt, 0)
+	elseif self.velocity.x < 0 then
+		self.velocity.x = math.min(self.velocity.x + ground_deceleration * dt, 0)
+	end
 
 	-- move player
 	local pos = go.get_position()
@@ -155,11 +176,10 @@ local function abort_jump(self)
 end
 
 local function walk(self, direction)
-	if self.ground_contact then
-		self.velocity.x = max_speed * direction
-	else
-		-- move slower in the air
-		self.velocity.x = max_speed * air_acceleration_factor * direction
+	self.acceleration.x = direction * ground_acceleration
+	-- slow down horizontal movement when in the air
+	if not self.ground_contact then
+		self.acceleration.x = self.acceleration.x * air_acceleration_factor
 	end
 end
 
