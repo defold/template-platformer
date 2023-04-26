@@ -71,7 +71,7 @@ local function update_animations(self)
 	end
 end
 
-function update(self, dt)
+function fixed_update(self, dt)
 	-- apply gravity
 	self.velocity.y = self.velocity.y + gravity * dt
 
