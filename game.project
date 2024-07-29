@@ -45,6 +45,7 @@ shared_state = 1
 gravity_y = -1000.0
 scale = 0.01
 use_fixed_timestep = 1
+velocity_threshold = 100.0
 
 [graphics]
 max_debug_vertices = 50000
