@@ -13,6 +13,7 @@ width = 960
 height = 640
 vsync = 0
 update_frequency = 60
+high_dpi = 1
 
 [ios]
 app_icon_120x120 = /assets/app_icons/icon_120.png
@@ -49,4 +50,7 @@ velocity_threshold = 100.0
 
 [graphics]
 max_debug_vertices = 50000
+
+[html5]
+scale_mode = stretch
 
